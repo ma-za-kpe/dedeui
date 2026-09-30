@@ -1,0 +1,18 @@
+name: dede-ui
+services:
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - path: ${DEDE_UI_ENV_FILE:-/Users/mac/.config/dede/ui.env}
+        required: false
+    environment:
+      DEDE_APP_ORIGIN: "http://localhost:3000"
+      DEDE_ENABLE_LIVE: ${DEDE_ENABLE_LIVE:-false}
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

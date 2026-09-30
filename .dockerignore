@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.env*
+.firebase
+*service-account*.json
+*.log
+public/local-runtime

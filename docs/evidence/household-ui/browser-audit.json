@@ -1,0 +1,139 @@
+{
+  "results": [
+    {
+      "width": 320,
+      "theme": "light",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 48,
+        "touchHeight": 48,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 48,
+        "touchHeight": 48,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 375,
+      "theme": "light",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 375,
+      "theme": "dark",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 768,
+      "theme": "light",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 768,
+      "theme": "dark",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "layout": {
+        "overflow": false,
+        "roomOverflow": false,
+        "touchWidth": 52,
+        "touchHeight": 52,
+        "composerVisible": true,
+        "withinViewport": true
+      },
+      "violations": []
+    }
+  ],
+  "settingsViolations": [],
+  "interactionChecks": "consent, text composer, attachments, conversation menu and Escape, draft preservation, real browser microphone denial, unconfigured Google sign-in",
+  "errors": [],
+  "liveModelCalls": 0,
+  "scope": "Household thread UI only; physical microphone, speaker, live voice/model integration and Google consent not qualified"
+}

@@ -1,0 +1,12 @@
+{
+  "date": "2026-09-30",
+  "test": "tests/live-voice-integration.mjs",
+  "passed": false,
+  "stage": "connection preflight",
+  "expectedMode": "voice",
+  "observedMode": "experimental_text",
+  "reason": "Connected service is text-only; real voice integration is not qualified",
+  "audioUploaded": false,
+  "modelRequests": 0,
+  "scope": "Actual running localhost connection; not a substituted model response"
+}
