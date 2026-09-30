@@ -1,0 +1,38 @@
+name: Deploy Pages
+on:
+  workflow_run:
+    workflows: [UI quality gate]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Export static UI in Docker
+        env:
+          DEDE_FIREBASE_WEB_CONFIG: ${{ vars.DEDE_FIREBASE_WEB_CONFIG }}
+        run: docker build --file Dockerfile.pages --build-arg DEDE_FIREBASE_WEB_CONFIG --build-arg NEXT_PUBLIC_BASE_PATH=/dedeui --output type=local,dest=out .
+      - name: Verify exported paths and privacy boundary
+        run: docker run --rm -v "$PWD/out:/site:ro" -v "$PWD/tests/pages-export.mjs:/test.mjs:ro" node:22-bookworm-slim@sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c node /test.mjs
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: out
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        id: deployment

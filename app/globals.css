@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@font-face{font-family:Atkinson;src:url('/fonts/AtkinsonHyperlegibleNext-Variable.ttf') format('truetype');font-weight:100 900;font-display:swap}
 :root{color-scheme:light;--paper:#f3ece0;--surface:#faf6ee;--ink:#2b231e;--soft:#695e51;--line:#dfd6c8;--accent:#e3a03a;--card:#e9dfce;--voice-ink:#332314}
 :root[data-theme="dark"]{color-scheme:dark;--paper:#1d1916;--surface:#2a2521;--ink:#ede3d3;--soft:#c0b4a4;--line:#494137;--accent:#e8ac50;--card:#383029}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px Atkinson,Arial,sans-serif}button,input,textarea,select{font:inherit}button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}button{color:inherit;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}a{color:inherit;text-decoration:none}:is(button,a,input,textarea,select,summary):focus-visible{outline:3px solid var(--accent);outline-offset:3px}button svg{width:23px;height:23px;flex-shrink:0}

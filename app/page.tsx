@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { appPath } from '@/lib/app-path';
 import ThemePicker from "./theme-picker";
 import { useVoiceRecorder } from "./use-voice-recorder";
 import VoiceReply from "./voice-reply";
@@ -36,6 +37,7 @@ export default function Home() {
   const [attachments, setAttachments] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [busy, setBusy] = useState(false);
+  const [ageStatus, setAgeStatus] = useState<'unknown' | 'adult_declared' | 'minor'>('unknown');
   const [spokenReplies, setSpokenReplies] = useState(() => {
     try { return typeof window === "undefined" || localStorage.getItem("dede-spoken-replies") !== "off"; } catch { return true; }
   });
@@ -52,6 +54,7 @@ export default function Home() {
     accountGeneration.current += 1;
     document.querySelectorAll("audio").forEach(player => player.pause());
     setMessages([]); setDraft(""); setUploaded(null); voice.discard(); local.stop();
+    setAgeStatus('unknown');
   });
   const sending = useRef(false);
   const mounted = useRef(true);
@@ -73,7 +76,7 @@ export default function Home() {
 
   useEffect(() => {
     mounted.current = true;
-    if ("serviceWorker" in navigator) void navigator.serviceWorker.register("/sw.js").catch(() => {});
+    if ("serviceWorker" in navigator) void navigator.serviceWorker.register(appPath('/sw.js')).catch(() => {});
     return () => { mounted.current = false; };
   }, []);
 
@@ -95,19 +98,21 @@ export default function Home() {
   async function send() {
     if (sending.current || locked || (!draft.trim() && !pendingAudio)) return;
     if (!account.user || account.loading || account.busy) { setNotice("Sign in with Google before sending a message or voice note."); return; }
+    if (ageStatus !== 'adult_declared') { setNotice('DeDe is for adults 18 and over. Please complete the age check before sending.'); return; }
     if (!local.ready) { setNotice("Load the on-device models below before sending. Your input stays here."); return; }
     sending.current = true; setBusy(true); setNotice("");
     const generation = accountGeneration.current;
     const inputText = pendingAudio ? "" : draft;
     try {
       const history = messages.map(message => ({ role: message.who === "you" ? "user" as const : "assistant" as const, content: message.text }));
-      const result = await local.turn(inputText, pendingAudio, history);
+      const result = await local.turn(inputText, pendingAudio, history, ageStatus);
       if (!mounted.current || generation !== accountGeneration.current) return;
       setMessages(old => [...old, { who: "you", text: result.transcript, recording: pendingAudio || undefined }, { who: "dede", text: result.text, audio: result.audio }]);
       if (!pendingAudio) setDraft("");
       setUploaded(null); voice.discard(); setTyping(false); setAttachments(false);
       if (result.warning) setNotice(result.warning);
     } catch (cause) {
+      if (generation === accountGeneration.current && cause && typeof cause === 'object' && 'code' in cause && cause.code === 'AGE_RESTRICTED') { setAgeStatus('minor'); local.stop(); }
       if (mounted.current && generation === accountGeneration.current) setNotice(cause instanceof Error ? cause.message : "The connection failed. Your input is still here; it won't retry automatically.");
     } finally { sending.current = false; if (mounted.current) setBusy(false); }
   }
@@ -134,7 +139,7 @@ export default function Home() {
     <main className="main-panel">
       <header className="contact-header">
         {tab !== "Talk" && <button className="icon-button" onClick={() => chooseTab("Talk")} aria-label="Back to conversation">‹</button>}
-        <div className="contact-avatar"><Image className="mark-light" src="/brand/dede-mark.svg" width={27} height={32} alt=""/><Image className="mark-dark" src="/brand/dede-mark-dark.svg" width={27} height={32} alt=""/></div>
+        <div className="contact-avatar"><Image className="mark-light" src={appPath('/brand/dede-mark.svg')} width={27} height={32} alt=""/><Image className="mark-dark" src={appPath('/brand/dede-mark-dark.svg')} width={27} height={32} alt=""/></div>
         <div className="contact-name"><h1>{tab === "Talk" ? "DeDe" : tabNames[tab]}</h1><span>{tab === "Talk" ? status : "DeDe"}</span></div>
         <div className="contact-menu" ref={menuContainer}><button className="icon-button" onClick={() => setMenu(!menu)} aria-label="Conversation options" aria-expanded={menu} aria-controls="conversation-options">⋮</button>
           {menu && <nav id="conversation-options" aria-label="Conversation options">{tabs.map(name => <button key={name} onClick={() => chooseTab(name)} aria-current={tab === name ? "page" : undefined}>{tabNames[name]}</button>)}</nav>}
@@ -152,6 +157,8 @@ export default function Home() {
           <div ref={threadEnd}/>
         </section>
         <div className="composer-area">
+          <details className="detail-card"><summary>Need urgent help?</summary><p>Use your phone’s emergency calling feature or ask someone safe nearby to help. This app cannot place a call or send an alert. Help information is available regardless of age or sign-in.</p></details>
+          {account.user && ageStatus !== 'adult_declared' && <section className="detail-card" aria-label="Adults-only age check"><h2>DeDe is for adults</h2><p>{ageStatus === 'minor' ? 'This conversation is not available to under-18s. Please ask a parent, guardian or another trusted adult for support. Adding a guardian does not unlock adult chat.' : 'Are you 18 or older? Google sign-in does not confirm your age. Your answer stays in this tab for now; it is not verified age or a saved vault record.'}</p>{ageStatus === 'unknown' && <><button className="outline-button" onClick={() => setAgeStatus('adult_declared')}>I am 18 or older</button><button className="text-button" onClick={() => { setAgeStatus('minor'); local.stop(); voice.discard(); setUploaded(null); }}>I am under 18</button></>}</section>}
           {!account.user && <div className="detail-card"><p>{account.loading ? "Checking sign-in…" : "Sign in before sending a message or voice note. Your conversation is processed on this device."}</p><button className="outline-button" disabled={!account.configured || account.busy || account.loading} onClick={account.signIn}>{account.busy ? "Signing in…" : "Continue with Google"}</button>{account.notice && <p role="status">{account.notice}</p>}</div>}
           {!local.ready && <div className="detail-card"><p>On-device voice and chat. Initial download is about 300 MB; allow 450 MB free. English-only reference models, not the qualified DeDe student. History stays in this tab and is not backed up.</p><p role="status">{local.status}</p><button className="outline-button" disabled={local.loading || account.busy} onClick={local.load}>{local.loading ? "Loading…" : "Download / load on-device models"}</button>{local.loading && <button className="text-button" onClick={local.stop}>Cancel download</button>}</div>}
           {(notice || voice.error) && <div className="notice" role="status"><span>{voice.error || notice}</span><button onClick={() => { setNotice(""); if (voice.error) voice.discard(); }} aria-label="Dismiss notice">×</button></div>}

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { readFile, access } from 'node:fs/promises';
+const root = process.env.PAGES_OUTPUT || '/site';
+const html = await readFile(`${root}/index.html`, 'utf8');
+assert.match(html, /\/dedeui\/_next\//);
+assert.match(html, /\/dedeui\/brand\/dede-mark/);
+const manifest = JSON.parse(await readFile(`${root}/manifest.webmanifest`, 'utf8'));
+assert.equal(manifest.start_url, '/dedeui/');
+assert.equal(manifest.scope, '/dedeui/');
+for (const icon of manifest.icons) await access(`${root}${icon.src.replace(/^\/dedeui/, '')}`);
+for (const file of ['.nojekyll', 'firebase-config.json', 'local-worker.js', 'local-policy.js', 'age-policy.js', 'model-integrity.js', 'local-runtime/transformers.web.js', 'local-runtime/ort-wasm-simd-threaded.wasm', 'sw.js', 'offline.html']) await access(`${root}/${file}`);
+await assert.rejects(access(`${root}/api`));
+console.log('PASS: Pages export has subpath-aware assets, manifest, local runtime and no server API');

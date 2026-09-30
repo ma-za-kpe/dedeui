@@ -39,7 +39,7 @@ try {
     const source = offline.createBufferSource(); source.buffer = decoded; source.connect(offline.destination); source.start();
     const samples = (await offline.startRendering()).getChannelData(0);
     await context.close();
-    window.localReviewWorker.postMessage({ type: 'turn', samples: samples.buffer, history: [] }, [samples.buffer]);
+    window.localReviewWorker.postMessage({ type: 'turn', samples: samples.buffer, history: [], ageStatus: 'adult_declared' }, [samples.buffer]);
   }, fixture);
   await page.waitForFunction(() => window.localReviewEvents.some(x => x.type === 'reply' || x.type === 'error'), undefined, { timeout: 240000 });
   console.log('Voice turn returned; checking full speech playback.');

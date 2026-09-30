@@ -25,6 +25,7 @@ One contact. One conversation. A microphone within reach.
 - **Keep it familiar.** A mobile-first conversation layout, quiet colours and light, dark or system appearance.
 - **Use other inputs when needed.** Type a message or attach an audio file. Photo and document understanding are still planned.
 - **Sign in before sending.** Google authentication gates text and voice submission.
+- **Adults only.** A separate 18+ self-declaration gates chat; clear first-person minor-age statements also stop reply generation. This is not age verification, and broader age-signal handling and encrypted age-state storage remain unfinished. Emergency-help instructions stay accessible, but this app cannot call or alert anyone.
 - **Stay in control.** Explicit model downloads, cancellation and model-cache removal. No automatic fallback to Vast.
 
 <div align="center">
@@ -98,6 +99,24 @@ The worker uses **Transformers.js and single-threaded WebAssembly**. Public mode
 **Performance and quality are not qualified.** CPU inference can be slow, replies can fail quality checks, and physical-phone memory, battery and thermal behaviour remain unmeasured. The current output filter is not the full backend law-enforcement graph. Production speech also requires a compatible licence. Read the [local-runtime details](docs/local-inference.md).
 
 ## Verification
+
+Install the tracked pre-commit hook once per clone:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+Every commit checks the exact staged Git snapshot in Docker: credential/path/size checks, zero-warning ESLint, all unit tests, an npm audit blocking high/critical vulnerabilities, and the production TypeScript/build gate. Missing Docker, registry failures or failed checks block the commit. No model requests or secrets are needed. GitHub Actions repeats the gate on pull requests and pushes to `main`. Local hooks can be bypassed; required branch-protection checks must be configured separately.
+
+### GitHub Pages
+
+Configured site: [ma-za-kpe.github.io/dedeui](https://ma-za-kpe.github.io/dedeui/).
+
+Check [Pages deployment status](https://github.com/ma-za-kpe/dedeui/actions/workflows/pages.yml) for the published release. The URL returns 404 until the first successful deployment. For local development, use [localhost:3000](http://localhost:3000).
+
+After a successful quality-gate run for a push/merge to `main`, the Pages workflow builds and deploys the **same commit** as a static site under `/dedeui`. It omits server routes; Google sign-in uses public web configuration supplied through the repository variable `DEDE_FIREBASE_WEB_CONFIG`. Enable GitHub Pages with GitHub Actions as its source, and authorize `ma-za-kpe.github.io` in Firebase before testing real sign-in. Without that configuration, the static UI remains signed out and cannot send.
+
+Pages is for this experimental static demo, not a production SaaS backend. It cannot run the model, store the vault or reproduce the Docker server's response-security headers. Review [GitHub Pages usage limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits) before production use. Model weights remain outside Git and outside the Pages artifact. A future experimental model download can use GitHub Release assets (under 2 GiB each), with licence, checksum and qualification receipts; download hosting does not provide inference or make GGUF compatible with the browser's ONNX runtime.
 
 The Docker build runs ESLint and the production TypeScript/Next.js build. Run the HTTP smoke checks against the running container:
 
