@@ -1,0 +1,2 @@
+# Intentionally empty: security checks must inspect every archived staged file,
+# including force-added files excluded by the application's .dockerignore.

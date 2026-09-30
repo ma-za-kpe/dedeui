@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Auth, User } from "firebase/auth";
+import { appPath } from '@/lib/app-path';
 
 export function useAccount(onIdentityChange?: () => void) {
   const [configured, setConfigured] = useState(false);
@@ -22,7 +23,8 @@ export function useAccount(onIdentityChange?: () => void) {
     active.current = true;
     let cancelled = false;
     async function prepare() {
-      const data = await (await fetch("/api/firebase-config", { cache: "no-store" })).json();
+      const configPath = process.env.NEXT_PUBLIC_STATIC_SITE === 'true' ? '/firebase-config.json' : '/api/firebase-config';
+      const data = await (await fetch(appPath(configPath), { cache: "no-store" })).json();
       if (!data.configured || cancelled) { if (!cancelled) setLoading(false); return; }
       const [{ getApps, initializeApp }, sdk] = await Promise.all([import("firebase/app"), import("firebase/auth")]);
       if (cancelled) return;

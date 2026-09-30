@@ -1,7 +1,8 @@
 /* Browser-only reference pipeline. No conversation leaves this worker. */
-import { env, pipeline } from '/local-runtime/transformers.web.js';
-import { assertLocalReply } from '/local-policy.js';
-import { artifactRequestOptions, verifyArtifact, verifyArtifactFetch } from '/model-integrity.js';
+import { env, pipeline } from './local-runtime/transformers.web.js';
+import { assertLocalReply } from './local-policy.js';
+import { requireAdultDeclaration, isExplicitMinor } from './age-policy.js';
+import { artifactRequestOptions, verifyArtifact, verifyArtifactFetch } from './model-integrity.js';
 
 const CACHE = 'dede-local-models-v1';
 const MODELS = {
@@ -41,8 +42,8 @@ env.customCache = {
 };
 env.backends.onnx.wasm.numThreads = 1;
 env.backends.onnx.wasm.wasmPaths = {
-  mjs: new URL('/local-runtime/ort-wasm-simd-threaded.mjs', globalThis.location.href).href,
-  wasm: new URL('/local-runtime/ort-wasm-simd-threaded.wasm', globalThis.location.href).href,
+  mjs: new URL('./local-runtime/ort-wasm-simd-threaded.mjs', globalThis.location.href).href,
+  wasm: new URL('./local-runtime/ort-wasm-simd-threaded.wasm', globalThis.location.href).href,
 };
 // Runtime assets are self-hosted from the locked dependency. Model revisions are immutable.
 // No browser SpeechRecognition or remote speechSynthesis is used.
@@ -51,7 +52,7 @@ globalThis.fetch = async (input, init) => {
   if (installed) throw new Error('Network is disabled during local inference.');
   const url = pinnedURL(input);
   const modelAsset = Object.values(MODELS).some(([id, revision]) => url.href.startsWith(`https://huggingface.co/${id}/resolve/${revision}/`));
-  const runtimeAsset = url.origin === globalThis.location.origin && url.pathname.startsWith('/local-runtime/');
+  const runtimeAsset = url.href.startsWith(new URL('./local-runtime/', globalThis.location.href).href);
   const options = artifactRequestOptions(input, init);
   if ((!modelAsset && !runtimeAsset) || !['GET', 'HEAD'].includes(options.method)) throw new Error(`Non-artifact network request blocked: ${options.method} ${url.origin}${url.pathname}`);
   const response = await originalFetch(url.href, { ...options, credentials: 'omit', referrerPolicy: 'no-referrer' });
@@ -76,6 +77,7 @@ globalThis.onmessage = async ({ data }) => {
     if (data.type === 'load') {
       await load(); globalThis.postMessage({ type: 'ready', models: MODELS });
     } else if (data.type === 'turn') {
+      requireAdultDeclaration(data.ageStatus);
       if (!installed) throw new Error('Download and load the local models first.');
       let text = typeof data.text === 'string' ? data.text.slice(0, 2000).trim() : '';
       if (data.samples) {
@@ -86,6 +88,10 @@ globalThis.onmessage = async ({ data }) => {
         text = result.text.trim();
       }
       if (!text) throw new Error('No words were heard. Your recording is still available.');
+      if (isExplicitMinor(text)) {
+        globalThis.postMessage({ type: 'age_blocked', message: 'DeDe is for adults 18 and over. Please ask a parent, guardian or trusted adult for support. If you need urgent help, use your phone’s emergency calling feature. This app cannot call or alert anyone.' });
+        return;
+      }
       globalThis.postMessage({ type: 'progress', message: 'Thinking on this device…' });
       const history = (data.history || []).slice(-6).filter(x => ['user', 'assistant'].includes(x.role) && typeof x.content === 'string').map(x => ({ role: x.role, content: x.content.slice(0, 500) }));
       const result = await generator([{ role: 'system', content: constitution }, ...history, { role: 'user', content: text }], { max_new_tokens: 72, do_sample: false, return_full_text: false });
