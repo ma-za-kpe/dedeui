@@ -1,0 +1,9 @@
+#!/bin/sh
+# Remote branch protection is authoritative; this is an early local safeguard.
+set -eu
+while read -r local_ref local_oid remote_ref remote_oid; do
+  if [ "$remote_ref" = refs/heads/main ]; then
+    echo 'BLOCKED: main changes must go through a pull-request merge.' >&2
+    exit 1
+  fi
+done

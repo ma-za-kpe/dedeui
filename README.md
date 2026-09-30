@@ -11,7 +11,7 @@ An audio-first conversation space, designed to feel familiar on your phone.
 [![Docker](https://img.shields.io/badge/Development-Docker-2B231E?style=flat-square)](compose.yaml)
 [![Status](https://img.shields.io/badge/Status-Experimental-E3A03A?style=flat-square)](TASKS.md)
 
-[Quick start](#quick-start) · [The experience](#the-experience) · [How it works](#how-it-works) · [Roadmap](TASKS.md)
+[Quick start](#quick-start) · [The experience](#the-experience) · [How it works](#how-it-works) · [Roadmap](TASKS.md) · [Changelog](CHANGELOG.md) · [Releases](https://github.com/ma-za-kpe/dedeui/releases)
 
 </div>
 
