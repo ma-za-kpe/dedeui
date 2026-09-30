@@ -7,10 +7,12 @@ export function violations(path, bytes) {
   if (bytes.length > 5 * 1024 * 1024) hits.push('file exceeds 5 MiB; store artifacts outside Git');
   const text = bytes.toString('utf8');
   const rules = {
-    'private key': /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+    'private key': /-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----/,
     'GitHub token': /\bgh[pousr]_[A-Za-z0-9]{30,}\b/,
+    'GitHub fine-grained token': /\bgithub_pat_[A-Za-z0-9_]{30,}\b/,
     'Hugging Face token': /\bhf_[A-Za-z0-9]{30,}\b/,
-    'AWS access key': /\bAKIA[0-9A-Z]{16}\b/,
+    'AWS access key': /\b(?:AKIA|ASIA)[0-9A-Z]{16}\b/,
+    'Google service account': /["']type["']\s*:\s*["']service_account["']/,
     'age secret': /AGE-SECRET-KEY-1[0-9A-Z]{50,}/,
     'credential assignment': /(?:DEDE_API_TOKEN|DEDE_R2_SECRET_ACCESS_KEY|client_secret|private_key|password)\s*["']?\s*[=:]\s*["']?[A-Za-z0-9_+/=-]{24,}/i,
     'credential URL': /https?:\/\/[^\s/@:]+:[^\s/@]+@/,

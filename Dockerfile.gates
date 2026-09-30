@@ -12,7 +12,7 @@ FROM deps AS verified
 ENV NEXT_TELEMETRY_DISABLED=1 CI=1
 COPY --from=checked /app/ ./
 RUN npm exec eslint -- --max-warnings=0 .
-RUN bash -n infra/precommit.sh && sh -n .githooks/pre-commit
+RUN bash -n infra/precommit.sh && sh -n .githooks/pre-commit && sh -n .githooks/pre-push
 RUN node --experimental-strip-types --test 'tests/*.test.mjs'
 ARG AUDIT_EPOCH
 RUN test -n "$AUDIT_EPOCH"

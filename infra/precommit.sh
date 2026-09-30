@@ -10,6 +10,10 @@ else
   git diff --cached --check
   snapshot=$(git write-tree)
 fi
+if git ls-tree -r "$snapshot" | awk '$1 == "160000" { found=1 } END { exit !found }'; then
+  echo 'BLOCKED: submodules are not scanned by the snapshot gate.' >&2
+  exit 1
+fi
 echo "Checking exact Git snapshot $snapshot in Docker (no model calls)."
 git archive "$snapshot" | docker build --file Dockerfile.gates --build-arg "AUDIT_EPOCH=$(date +%s)" --tag "dede-ui-gates:$snapshot" -
 echo 'PASS: snapshot security, zero-warning lint, unit tests, dependency audit and production build.'
