@@ -1,0 +1,108 @@
+{
+  "scope": "VoiceReply component synthetic-WAV playback only; no model, OAuth or physical-device qualification",
+  "rounds": 20,
+  "completed": 20,
+  "passed": true,
+  "samples": [
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 265,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 508
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    },
+    {
+      "documents": 2,
+      "nodes": 263,
+      "jsEventListeners": 506
+    }
+  ]
+}
