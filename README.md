@@ -112,7 +112,7 @@ Every commit checks the exact staged Git snapshot in Docker: credential/path/siz
 
 Configured site: [ma-za-kpe.github.io/dedeui](https://ma-za-kpe.github.io/dedeui/).
 
-**Not live yet:** the URL currently returns GitHub's 404 page; the first successful deployment is still pending. Use [localhost:3000](http://localhost:3000) for the running local app.
+Check [Pages deployment status](https://github.com/ma-za-kpe/dedeui/actions/workflows/pages.yml) for the published release. The URL returns 404 until the first successful deployment. For local development, use [localhost:3000](http://localhost:3000).
 
 After a successful quality-gate run for a push/merge to `main`, the Pages workflow builds and deploys the **same commit** as a static site under `/dedeui`. It omits server routes; Google sign-in uses public web configuration supplied through the repository variable `DEDE_FIREBASE_WEB_CONFIG`. Enable GitHub Pages with GitHub Actions as its source, and authorize `ma-za-kpe.github.io` in Firebase before testing real sign-in. Without that configuration, the static UI remains signed out and cannot send.
 
