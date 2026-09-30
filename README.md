@@ -1,81 +1,142 @@
-# DeDe testing room
+<div align="center">
 
-**Current implementation update, 2026-09-30:** the new browser-only path supersedes the workshop setup below. Google sign-in is required before sending. Model downloads are explicit; speech recognition, reply generation and speech synthesis run in a worker on the device, with no Vast fallback. `/api/turn` is retired (410). This reference-model bundle is not a trained or law-qualified DeDe release, and tab history is not backed up. Read [browser inference and authentication](docs/local-inference.md) and the task ledger for verification status. The older workshop instructions below describe historical testing, not the new send path.
+![DeDe — A little room to be heard.](docs/assets/readme-banner.svg)
 
-Temporary synthetic-only PWA, not the production mobile app. Brand/font reused from DeDe;
-font licence: `public/fonts/OFL-Next.txt`. No model replies are mocked.
+# DeDe UI
 
-The UI opens directly into one household conversation: DeDe as a contact, an open thread,
-and a bottom voice-note composer. Tap to record, stop, listen back, then explicitly send.
-Text and audio-file attachment are nearby options; settings, memory and safety live in the contact menu. Microphone preview
-works locally in a supported browser; sending a recording requires a configured speech-capable
-core. The current CPU candidate remains explicitly text-only during the protected sweep.
-Photo/document reading, persistent vault and beacon delivery remain pending, with status shown
-in the UI. See the [household design audit](docs/household-ui-audit.md) and
-[Firebase and R2 backend proposal](docs/firebase-r2-plan.md).
+An audio-first conversation space, designed to feel familiar on your phone.
 
-## Background runtime (Docker only)
+[![Next.js](https://img.shields.io/badge/Next.js-16-2B231E?style=flat-square)](package.json)
+[![React](https://img.shields.io/badge/React-19-2B231E?style=flat-square)](package.json)
+[![Docker](https://img.shields.io/badge/Development-Docker-2B231E?style=flat-square)](compose.yaml)
+[![Status](https://img.shields.io/badge/Status-Experimental-E3A03A?style=flat-square)](TASKS.md)
+
+[Quick start](#quick-start) · [The experience](#the-experience) · [How it works](#how-it-works) · [Roadmap](TASKS.md)
+
+</div>
+
+> **A working prototype, not a qualified release.** The current browser model is a reference model—not the trained DeDe student. Conversations live in tab memory and are **not backed up**. Do not use this build for emergency assistance or as the only copy of important information.
+
+## The experience
+
+One contact. One conversation. A microphone within reach.
+
+- **Speak first.** Record, listen back and choose when to send. DeDe's replies have visible text and spoken audio by default; turn speech off in Settings.
+- **Keep it familiar.** A mobile-first conversation layout, quiet colours and light, dark or system appearance.
+- **Use other inputs when needed.** Type a message or attach an audio file. Photo and document understanding are still planned.
+- **Sign in before sending.** Google authentication gates text and voice submission.
+- **Stay in control.** Explicit model downloads, cancellation and model-cache removal. No automatic fallback to Vast.
+
+<div align="center">
+  <img src="docs/evidence/onboarding-ui/audit-390-light.png" width="280" alt="DeDe mobile conversation in light mode, with an introductory message and microphone composer" />
+  &nbsp;&nbsp;
+  <img src="docs/evidence/onboarding-ui/audit-390-dark.png" width="280" alt="DeDe mobile conversation in dark mode" />
+</div>
+
+<p align="center"><sub>Real browser-audit captures from the earlier onboarding build. These show the visual design; connection labels predate the current local runtime.</sub></p>
+
+## Quick start
+
+Use Docker for local development and testing. You do not need to install Node on the host.
 
 ```sh
+git clone https://github.com/ma-za-kpe/dedeui.git
+cd dedeui
 docker compose up --build -d
 ```
 
-Open http://localhost:3000. User approved stopping `crown-app` for this port; its validation
-container is untouched. Logs: `docker compose logs --tail 60 web`. Stop this app only:
-`docker compose stop web`. Restore crown later with `docker start crown-app` after freeing port 3000.
+Open **[localhost:3000](http://localhost:3000)**. The service binds to loopback only.
 
-Default: **live inference disabled**. Navigation, composer and recording preview do not send model
-requests. Messages live in tab memory only; refreshing loses them. Nothing is backed up. No biometric
-authentication, persistent memory or beacon delivery. Offline fallback is a notice, not inference.
+```sh
+docker compose logs --tail 60 web   # Inspect the app
+docker compose stop web           # Stop this app only
+```
 
-## Real backend testing — operator setup required
+For source changes, rebuild and redeploy with `docker compose up --build -d`. This is a production-style container, not a hot-reload development server.
 
-After coordinating with the population sweep, supply `DEDE_ENABLE_LIVE=true`, `DEDE_CORE_URL`
-pointing to a private SSH tunnel, and `DEDE_API_TOKEN` through runtime-only external configuration.
-Never put tokens in public variables, browser settings, Git, build arguments or logs. Override the
-compose disabled flag explicitly; do not expose the app beyond loopback without authentication.
-Docker Desktop can reach a separately configured host tunnel via `host.docker.internal`.
+### Enable Google sign-in
 
-Candidate setup: Compose optionally reads the owner-only external
-`~/.config/dede/ui.env` (override path with `DEDE_UI_ENV_FILE`). It must provide the core URL/token
-and `DEDE_EXPECTED_MODEL`, `DEDE_EXPECTED_QUANTIZATION`, `DEDE_EXPECTED_ARTIFACT_SHA256`.
-Do not use the shared teacher API as though it were the student. A separate candidate core must
-point at the intended quantized server and publish matching `DEDE_LLM_MODEL`,
-`DEDE_LLM_QUANTIZATION`, `DEDE_LLM_ARTIFACT_SHA256` configuration. The authenticated
-`/v1/model-info` endpoint identifies the isolated candidate. An alias alone is insufficient;
-the operator must independently hash the actual loaded artifact. Matching metadata is not attestation.
+The UI can open without Firebase configuration, but sending remains unavailable until sign-in succeeds.
 
-The Settings connection button checks only that metadata, with no model or speech request. Sending additionally
-requires `DEDE_ENABLE_LIVE=true` in the Compose invocation, matching identity, and synthetic-only
-service health. During the sweep, use only the separately inspected isolated CPU candidate,
-not the shared GPU/speech services. No model or speech requests were made for the household UI audit.
+1. Configure the Firebase Google provider and the appropriate authorized domain.
+2. Supply `DEDE_FIREBASE_WEB_CONFIG` as a single-line JSON object in an external, owner-only environment file (`chmod 600`). Required client fields: `apiKey`, `authDomain`, `projectId` and `appId`.
+3. Point Compose at that file:
 
-The server verifies synthetic-only health, submits `/v1/shares`, then runs the real
-`/v1/dev/turns/{id}/run` endpoint. This is a **buffered dev adapter**, not production streaming.
-Audio sentences are playable after completion. No fallback-generated replies or automatic retries.
-The core currently starts without persistent context: displaying a chat history is not memory.
-Recordings stop at 30 seconds. Fictional input only; never use this for emergencies.
+```sh
+DEDE_UI_ENV_FILE=/absolute/path/to/ui.env docker compose up --build -d
+```
 
-Origin checks and one-process concurrency limits are not production auth/rate limiting. Phone access
-needs an approved HTTPS hosting/tunnel and authentication plan; localhost on a phone is not the Mac.
+Firebase **web client configuration** is intentionally exposed to the browser. Service-account credentials, private keys and server secrets are not. Keep configuration files out of Git; never put private credentials in `NEXT_PUBLIC_*` variables. See the [authentication boundary](docs/local-inference.md#authentication-boundary).
 
-Docker build runs ESLint and production build/type checks. Browser installation, microphone and
-audio behavior require actual device tests. Service worker caches only the public offline notice.
-See `TASKS.md` for remaining work and evidence.
+After signing in, use Settings to download and load the local models. Microphone capture requires browser permission. A phone cannot reach the Mac through its own `localhost`; physical-device access needs a separately configured secure origin.
 
-## Isolated experimental text-only candidate
+## How it works
 
-`DEDE_TEST_MODE=experimental_text` selects an explicit no-speech path using the same real
-shares/graph/model protocol. The isolated core must advertise `mode: text_only` in authenticated
-model metadata and health, with `perception: null`. Missing or mismatched mode blocks submission.
-The browser allows local recording preview, identifies voice sending as pending, and the server rejects
-audio uploads before contacting the core. Audio events in a text-only response are a contract error;
-there is no substitute speech or stub. `DEDE_ENABLE_LIVE=true` and the artifact identity checks are
-still required. The default mode is `voice`; unknown values fail closed.
+```text
+                     On the user's device
 
-This does not run a model on the Mac or in the browser. The operator must separately verify the
-Vast candidate's actual artifact, CPU-only serving configuration, isolated core/tunnel and resource
-budget before enabling it during a sweep. Do not point this mode at the shared voice core or restart
-the sweep's services. Training a fresh model and qualifying it are separate tasks. These code changes
-alone neither generate weights nor enable a connection. Connection metadata may be fetched on page
-load; it never requests model inference. Real turns only happen after pressing Send.
+  Voice note → local transcription ─┐
+                                   ├→ recent tab context → local language model
+  Typed message ───────────────────┘                              │
+                                                output checks ←──┘
+                                                      │
+                                           visible text + local speech
+```
+
+The worker uses **Transformers.js and single-threaded WebAssembly**. Public model files are downloaded at pinned revisions, ONNX weights are checksum-verified, and inference runs locally after loading. The model cache stores artifacts—not conversation backups.
+
+| Component | Current implementation |
+| --- | --- |
+| Interface | Next.js App Router, React, TypeScript, Tailwind CSS |
+| Authentication | Firebase Google sign-in; not vault encryption |
+| Language | SmolLM2 135M reference model, Q4 |
+| Listening | Whisper Tiny English, Q8 |
+| Speaking | MMS English, Q8; non-commercial reference only |
+| Conversation storage | In-memory tab state; lost on refresh or account changes |
+| Server inference | Disabled; the former `/api/turn` proxy returns `410` |
+
+**Performance and quality are not qualified.** CPU inference can be slow, replies can fail quality checks, and physical-phone memory, battery and thermal behaviour remain unmeasured. The current output filter is not the full backend law-enforcement graph. Production speech also requires a compatible licence. Read the [local-runtime details](docs/local-inference.md).
+
+## Verification
+
+The Docker build runs ESLint and the production TypeScript/Next.js build. Run the HTTP smoke checks against the running container:
+
+```sh
+docker compose exec -T web node --input-type=module - < tests/smoke.mjs
+```
+
+Run focused unit tests in Docker:
+
+```sh
+docker run --rm -v "$PWD:/app:ro" -w /app node:22-bookworm-slim \
+  node --experimental-strip-types --test 'tests/*.test.mjs'
+```
+
+The suite includes audio-format validation, local-output checks, model-integrity handling, Firebase configuration import and onboarding text. Browser tests cover layout, signed-out rejection and audio playback. Real-model integration is a separate, explicit test requiring downloaded weights and a synthetic audio fixture; unit tests are not proof of model quality, real Google OAuth or physical-device readiness.
+
+## What's next
+
+| In this prototype | Still to qualify or build |
+| --- | --- |
+| Audio-first layout and themes | Physical-device recording, playback and accessibility |
+| Local text/STT/TTS runtime | Fast, law-qualified student and production voice |
+| Tab-local conversation context | Grounded memory, notes and encrypted persistence |
+| Google sign-in UI | Real-account lifecycle and future backend authorization |
+| PWA manifest and offline notice | Signed model updates, recovery and rollback |
+| No workshop upload fallback | Encrypted R2 sync, verified restore and consented beacons |
+
+The [task ledger](TASKS.md) records evidence and unfinished work. A checked test is not a promise that every layer is ready.
+
+## Explore
+
+- [Local inference, model pins and privacy boundaries](docs/local-inference.md)
+- [Household UI design audit](docs/household-ui-audit.md)
+- [Firebase + R2 architecture proposal](docs/firebase-r2-plan.md)
+- [Backend repository](https://github.com/ma-za-kpe/dedecorebackend)
+
+Brand assets live in [`public/brand`](public/brand). The bundled Atkinson Hyperlegible Next font includes its [OFL licence](public/fonts/OFL-Next.txt). Model licences are separate; this repository does not grant additional rights to model weights.
+
+<div align="center">
+  <img src="public/brand/icon-192.png" width="48" height="48" alt="DeDe amber-dot app icon" />
+  <p><sub>Voice at the centre. The rest within reach.</sub></p>
+</div>

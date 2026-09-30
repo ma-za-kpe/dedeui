@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title description">
+  <title id="title">DeDe — A little room to be heard.</title>
+  <desc id="description">Warm cream and amber DeDe branding with a voice waveform. Audio-first, mobile-first, built with care.</desc>
+  <rect width="1200" height="360" rx="28" fill="#F3EDE1"/>
+  <circle cx="1090" cy="50" r="240" fill="#E3A03A" opacity=".08"/>
+  <circle cx="1140" cy="330" r="190" fill="#E3A03A" opacity=".08"/>
+  <g transform="translate(54 55)">
+    <rect width="74" height="86" rx="20" fill="#FAF7F0" stroke="#DDD2C1"/>
+    <path d="M20 18 H35 A25 25 0 0 1 35 68 H20 Z" fill="none" stroke="#2B231E" stroke-width="8" stroke-linejoin="round"/>
+    <circle cx="40" cy="43" r="6" fill="#E3A03A"/>
+  </g>
+  <g fill="#2B231E" font-family="Arial, Helvetica, sans-serif">
+    <text x="150" y="113" font-size="56" font-weight="700">DeDe</text>
+    <text x="58" y="208" font-size="42" font-weight="600">A little room to be heard.</text>
+    <text x="60" y="252" font-size="20" fill="#685B4D">Voice at the centre. Text when you want it.</text>
+    <text x="60" y="313" font-size="13" letter-spacing="3" fill="#685B4D">AUDIO-FIRST / MOBILE-FIRST / IN DEVELOPMENT</text>
+  </g>
+  <g stroke="#D9952D" stroke-width="12" stroke-linecap="round">
+    <path d="M847 168v24 M874 147v66 M901 119v122 M928 144v72 M955 95v170 M982 131v98 M1009 151v58 M1036 166v28 M1063 151v58 M1090 169v22"/>
+  </g>
+</svg>
